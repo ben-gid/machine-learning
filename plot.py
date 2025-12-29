@@ -48,7 +48,7 @@ def plot_function(
     plt.ylabel("y")
     plt.title(f"function: {func_name}")
 
-    plt.savefig(fname=f"{func_name}.png")
+    plt.savefig(fname=f"imgs/{func_name}.png")
     
     
 def plot_binary_classification(

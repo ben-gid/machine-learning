@@ -1,5 +1,5 @@
 import numpy as np
-from generate_data import generate_seperable
+from generate_data import generate_separable
 from sklearn.model_selection import train_test_split
 
 from xgboost import XGBClassifier
@@ -7,7 +7,7 @@ from xgboost import XGBClassifier
 
 model =XGBClassifier()
 
-X, y = generate_seperable()
+X, y = generate_separable()
 
 X_train, x_test, y_train, y_test = train_test_split(
     X, y, train_size=0.9, random_state=42, shuffle=True)

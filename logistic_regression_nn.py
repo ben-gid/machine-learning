@@ -2,12 +2,11 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from typing import Sequence, Optional
 from numbers import Number
-from logistic_regression import sigmoid, compute_sig_gradient, predict,\
-    binary_cross_entropy
-from generate_data import generate_seperable
+from logistic_regression import sigmoid, compute_sig_gradient, predict
+from generate_data import generate_separable
 
 def main():
-    X, y = generate_seperable(20)
+    X, y = generate_separable(20)
     
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     model = SigmoidNN()
@@ -24,7 +23,17 @@ def main():
     predictions = model.predict(X_test)
     # print(f"final cost on test set: {final_cost}")
        
-    
+def binary_cross_entropy(a_out: np.ndarray, y: np.ndarray) -> float:
+    """sigmoid cost function
+
+    Args:
+        a_out (np.ndarray): 1d array of output from node
+        y (np.ndarray): 1d target values
+
+    Returns:
+        float: cost
+    """
+    return -(y * np.log(a_out) + (1 - y) * np.log(1 - a_out)).mean()
     
 class Neuron:
     """neuron that uses the sigmoid function for learning
@@ -64,7 +73,10 @@ class Neuron:
         if not isinstance(b, Number):
             raise ValueError("b can only be a float")
         self._b = b
-        
+    
+    def a_out(self, X: np.ndarray):
+        return self.w.dot(X) + self.b
+      
     def forward(self, a_in: np.ndarray) -> np.ndarray:
         """predicts output using sigmoid
 
@@ -80,8 +92,8 @@ class Neuron:
     def sig_gradient(self, X:np.ndarray, y: np.ndarray):
         return compute_sig_gradient(X, y, self.w, self.b)
     
-    def loss(self, X:np.ndarray, y:np.ndarray):
-        return binary_cross_entropy(X, y, self.w, self.b)
+    def loss(self, a_out:np.ndarray, y:np.ndarray) -> float:
+        return binary_cross_entropy(a_out, y)
     
 class DenseLayer:
     # each layer containes multiple neurons
@@ -157,12 +169,7 @@ class DenseLayer:
         """
         if not self.last_input:
             raise RuntimeError()
-        # dal/dzl
-        sig_gradient = a_in @ (1 - a_in)
-        # dc/dal
-        cost_gradient = 2 * (a_in - y)
-        #dzl/dwl
-        self.last_input
+        
 
     
     def losses(self, X:np.ndarray, y:np.ndarray) -> np.ndarray:
@@ -216,7 +223,7 @@ class SigmoidNN:
                 a_in = activations[i] # This is what was fed into it
                 
                 # cost of current layer
-                cost = (a_in - y) ** 2
+                cost = (a_in - y)
                 # 3. Calculate Gradients
                 if not layer.last_input:
                     raise RuntimeError()

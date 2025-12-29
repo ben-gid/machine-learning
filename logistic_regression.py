@@ -1,8 +1,8 @@
 import numpy as np
-from generate_data import generate_seperable
+from generate_data import generate_separable
 
 def main():
-    X, y = generate_seperable()
+    X, y = generate_separable()
     alpha = 1e-3
     
     # -------- Non-regularized --------

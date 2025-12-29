@@ -5,10 +5,10 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from keras.activations import sigmoid
 
-from generate_data import generate_seperable
+from generate_data import generate_separable
 from plot import plot_binary_classification
 
-X, y = generate_seperable(500)
+X, y = generate_separable(500)
 
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, train_size=0.7, random_state= 25, shuffle=True)
