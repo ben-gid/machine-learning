@@ -169,7 +169,7 @@ class DenseLayer:
         """
         if not self.last_input:
             raise RuntimeError()
-        
+        raise NotImplementedError()
 
     
     def losses(self, X:np.ndarray, y:np.ndarray) -> np.ndarray:
@@ -211,47 +211,49 @@ class SigmoidNN:
                 current_a = layer.forward(current_a)
                 activations.append(current_a)
             
-            # --- BACKWARD PASS ---
-            # 1. Calculate the Error at the very end
-            # Error = (Last_Layer_Output - y)
-            # error = (activations[-1] - y) ** 2 # delta of last layer
-            # cost = self.layers[-1].cost(activations[-1], y) self
-            
-            # 2. Iterate through layers in REVERSE order
+            # Assume 'activations' list contains: [X, output_layer1, output_layer2, ...]
+            # activations[0] is X (Input)
+            # activations[-1] is the Final Prediction
+
+            # 1. Initialize the first 'delta' (error signal) at the Output Layer
+            # We use (Prediction - y) because it is the derivative of Binary Cross Entropy + Sigmoid
+            # Note: activations[-1] is the final prediction
+            delta = activations[-1] - y 
+
+            # 2. Iterate BACKWARDS
+            # We start at the last layer index and go down to 0
             for i in reversed(range(len(self.layers))):
                 layer = self.layers[i]
-                a_in = activations[i] # This is what was fed into it
                 
-                # cost of current layer
-                cost = (a_in - y)
-                # 3. Calculate Gradients
-                if not layer.last_input:
-                    raise RuntimeError()
-                # dal/dzl
-                sig_gradient = a_in @ (1 - a_in)
-                # dc/dal
-                cost_gradient = 2 * (a_in - y)
+                # 'a_prev' is the input that was fed INTO this layer
+                # If i is 0 (first layer), a_prev is X (activations[0])
+                # because len(activations) == len(layers) + 1
+                a_prev = activations[i] 
                 
-                upstream_gradient = layer.last_input @ sig_gradient @ cost_gradient
-                # dW = Input_Transposed * Error
-                dW = a_in.T * cost
-                # db = Sum of Error
-                db = np.sum(cost)
+                # --- A. Calculate Gradients for THIS layer ---
+                # dW = (Input_Transposed @ Delta) / Batch_Size
+                m = a_prev.shape[0] # number of examples
+                dw = (1 / m) * np.dot(a_prev.T, delta)
+                db = (1 / m) * np.sum(delta, axis=0)
                 
-                
-                # 4. Calculate Error for the PREVIOUS layer (The Chain Rule)
-                # New_Error = (Error * Weights_Transposed) * Sigmoid_Derivative(input)
-                # gradients = layer.sig_gradients(a_in, y)
-                W = layer.weights()
-                new_error = ((cost * W.T) * dW) 
-                
-                # 5. Update Weights
-                # layer.w = layer.w - (alpha * dW)
-                layer.w 
-                # layer.b = layer.b - (alpha * db)
-                
-                # 6. Pass the 'New_Error' back to the next loop iteration
-                cost = New_Error
+                # --- B. Calculate 'delta' for the NEXT loop iteration (the layer to the left) ---
+                # We only need to do this if we are NOT at the first layer
+                if i > 0:
+                    # 1. Pull error back through weights: (Delta @ Weights_Transposed)
+                    error_prop = np.dot(delta, layer.w.T)
+                    
+                    # 2. Multiply by derivative of sigmoid from previous layer
+                    # sigmoid_derivative = a * (1 - a)
+                    # We look at activations[i] because that represents the output of the previous layer relative to the next step
+                    sig_deriv = a_prev * (1 - a_prev)
+                    
+                    # 3. New delta for the next step
+                    delta = error_prop * sig_deriv
+                    
+                # --- C. Update Weights ---
+                # (In a real library, you usually store gradients and update later, but this works)
+                layer.w -= self.alpha * dw
+                layer.b -= self.alpha * db
                 
     def predict(self, X:np.ndarray) -> np.ndarray:
         a = X # set initial a to X
