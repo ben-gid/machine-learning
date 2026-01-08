@@ -4,10 +4,19 @@ from typing import Optional
 def main():
     rng = np.random.default_rng(seed=42)
     X = rng.integers(low= 1, high=10, size=(10, 2))
-    best_centroids, lowest_cost, highest_cost = loop_cluster(X, 3, 100)
-    print(best_centroids, lowest_cost, highest_cost)
+    best_centroids, cost = run_kMeans(X, 5, 100)
+    print(best_centroids, type(cost))
 
-def cluster_cost(X: np.ndarray, centroids: np.ndarray):
+def cluster_cost(X: np.ndarray, centroids: np.ndarray) -> float:
+    """computes cluster_cost
+
+    Args:
+        X (np.ndarray): data
+        centroids (np.ndarray): centroids from running Kmeans
+
+    Returns:
+        float: cost
+    """
     loss = np.array([np.linalg.norm(X - centroid)**2 for centroid in centroids])
     return loss.mean(axis=0)
 
@@ -47,15 +56,28 @@ def cluster(X: np.ndarray, cluster_count: int, seed:Optional[int]=None) -> np.nd
         centroids = np.array(new_centroids)
         prev_asignments = assignments
         
-def loop_cluster(X: np.ndarray, cluster_count: int, loops:int):
-    centroids = []
-    for _ in range(loops):
+def run_kMeans(X: np.ndarray, cluster_count: int, iters:int
+               ) -> tuple[np.ndarray, float]:
+    """runs the Kmeans algorithm iters times to get the centroid 
+    with the lowest cost/diferentiaton
+
+    Args:
+        X (np.ndarray): data with shape (m, n)
+        cluster_count (int): desired number of clusters
+        iters (int): iterations to perform Kmeans
+
+    Returns:
+        tuple[np.ndarray, np.ndarray, float]: 
+        best_centroids: centroids with the lowest cost with shape (cluster_count, n),
+        cost: cost of best_centroids
+    """
+    centroids: list[np.ndarray] = []
+    for _ in range(iters):
         centroids.append(cluster(X, cluster_count))
     costs = [cluster_cost(X, centroids_) for centroids_ in centroids]
     lowest_cost = min(costs)
-    highest_cost = max(costs)
     best_centroids = centroids[costs.index(lowest_cost)]
-    return best_centroids, lowest_cost, highest_cost
+    return best_centroids, lowest_cost
     
 if __name__ == "__main__":
     main()
