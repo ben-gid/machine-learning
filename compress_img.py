@@ -7,7 +7,7 @@ from clusters import run_kMeans
 def main():
     l_argv = len(sys.argv)
     if l_argv != 3:
-        raise ValueError(f"Usage: python {__file__} [in_img_path] [out_img_path]")
+        sys.exit(f"Usage: python {__file__} [in_img_path] [out_img_path]")
     
     try:
         in_img = plt.imread(sys.argv[1]) 
@@ -17,7 +17,9 @@ def main():
     
     compressed_img = compress(in_img, 16)
     compressed_img
-        
+
+def main2():
+    in_img = 
 
 def shape_img_2d(img:Path, to:str):
     pass
