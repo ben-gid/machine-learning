@@ -56,6 +56,23 @@ def cluster(X: np.ndarray, cluster_count: int, seed:Optional[int]=None) -> np.nd
         centroids = np.array(new_centroids)
         prev_asignments = assignments
         
+def find_closest_centroids(X: np.ndarray, centroids:np.ndarray) -> np.ndarray:
+    """
+    Computes the centroid memberships for every example
+    
+    Args:
+        X (ndarray): (m, n) Input values      
+        centroids (ndarray): (K, n) centroids
+    
+    Returns:
+        idx (array_like): (m,) closest centroids
+    
+    """
+    norms = np.array([np.linalg.norm(X  - centroid, axis=1) for centroid in centroids])
+    idx = np.argmin(norms, axis=0)
+    
+    return idx
+        
 def run_kMeans(X: np.ndarray, cluster_count: int, iters:int
                ) -> tuple[np.ndarray, float]:
     """runs the Kmeans algorithm iters times to get the centroid 
